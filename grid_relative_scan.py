@@ -1,18 +1,13 @@
 import bluesky.plans as bp
 
-# step0: align with first well
-x_0 = motor_x.get()
-y_0 = motor_y.get()
-
 # define your motor and detector here
 area_det = None
 motor_x = None
 motor_y = None
-detector_list = [area_det, motor_x, motor_y] # append whatever you want
-for el in detector_list:
+grid_scan_det_list = [area_det, motor_x, motor_y]
+for el in grid_scan_det_list:
     if el is None:
         raise RuntimeError('Required detector is not defined yet')
-
 
 # for loop
 def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
@@ -37,15 +32,15 @@ def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
     x0 : float
         optional. starting position in x-direction of grid scan.
         usually it is at the center of a well. default is current
-        position (assume you align first) 
+        position (assume you align first)
     y0 : float
-        optional. starting position of grid scan. usually it is at the
-        center of a well
+        optional. starting position in y-direction of grid scan.
+        usually it is at the center of a well. default is current
         position (assume you align first)
 
     Example:
     --------
-    prun(<sample_index>, grid_scan(0.1, 0.1, 1, 1))
+    prun(<sample_index>, grid_scan_v1(0.1, 0.1, 1, 1))
     """
     if x0 is None:
         x0 = motor_x.get() #FIXME: syntax
@@ -59,9 +54,11 @@ def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
             mov(motor_y, _y)
             # inside a well, relative scan
             # x direction
-            x_scan = bp.relative_list_scan(detector_list, motor_x, [dx, -dx], 2)
+            x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x,
+                                           [dx, -dx], 2)
             # y direction
-            y_scan = bp.relative_list_scan(detector_list, motor_y, [dy, -dy], 2)
+            y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y,
+                                           [dy, -dy], 2)
 
 
 # outer_product_scan
@@ -91,13 +88,13 @@ def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y, x0=None, y0=None):
         usually it is at the center of a well. default is current
         position (assume you align first)
     y0 : float
-        optional. starting position of grid scan. usually it is at the
-        center of a well
+        optional. starting position in y-direction of grid scan.
+        usually it is at the center of a well. default is current
         position (assume you align first)
 
     Example:
     --------
-    prun(<sample_index>, grid_scan(0.1, 0.1, 3.5, 3.5))
+    prun(<sample_index>, grid_scan_v2(0.1, 0.1, 3.5, 3.5))
     """
     if x0 is None:
         x0 = motor_x.get() #FIXME: syntax
@@ -105,9 +102,10 @@ def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y, x0=None, y0=None):
         y0 = motor_y.get()
     # inside a well, relative scan
     # x direction
-    x_scan = bp.relative_list_scan(detector_list, motor_x, [dx, -dx], 2)
+    x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x, [dx, -dx], 2)
     # y direction
-    y_scan = bp.relative_list_scan(detector_list, motor_y, [dy, -dy], 2)
+    y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y, [dy, -dy], 2)
     total_relative_scan = bp.pchian(x_scan, y_scan)
     yield from bp.outer_product_scan(detector_list, motor_x, x0, xf,
-                                     num_x, motor_y, y0, y_f, num_y, False)
+                                     num_x, motor_y, y0, y_f, num_y,
+                                     False, per_step=total_relative_scan)
