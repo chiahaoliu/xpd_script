@@ -40,7 +40,10 @@ def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
 
     Example:
     --------
-    prun(<sample_index>, grid_scan_v1(0.1, 0.1, 1, 1))
+    prun(<sample_index>, grid_scan_v1(0.1, 0.1, 1, 1, 4, 4))
+    # scan oever 4 by 4 grid, with well separated in 1 unit, 1 unit in
+    # x- and y- direction respectively, and diameter of each well is
+    # 0.1*2 unit
     """
     if x0 is None:
         x0 = motor_x.get() #FIXME: syntax
@@ -55,11 +58,11 @@ def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
             # inside a well, relative scan
             # x direction
             x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x,
-                                           [dx, -dx], 2)
+                                           [dx, -dx])
             # y direction
             y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y,
-                                           [dy, -dy], 2)
-
+                                           [dy, -dy])
+            yield from bp.pchian(x_scan, y_scan)
 
 # outer_product_scan
 def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y, x0=None, y0=None):
@@ -94,7 +97,9 @@ def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y, x0=None, y0=None):
 
     Example:
     --------
-    prun(<sample_index>, grid_scan_v2(0.1, 0.1, 3.5, 3.5))
+    prun(<sample_index>, grid_scan_v2(0.1, 0.1, 3.5, 3.5, 4, 4))
+    # a 4 by 4 grid, with dimension 3.5 x 3.5 units in x- and y-
+    # direction respectively, and diameter is 0.1*2 unit in each well
     """
     if x0 is None:
         x0 = motor_x.get() #FIXME: syntax
@@ -102,10 +107,10 @@ def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y, x0=None, y0=None):
         y0 = motor_y.get()
     # inside a well, relative scan
     # x direction
-    x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x, [dx, -dx], 2)
+    x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x, [dx, -dx])
     # y direction
-    y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y, [dy, -dy], 2)
+    y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y, [dy, -dy])
     total_relative_scan = bp.pchian(x_scan, y_scan)
-    yield from bp.outer_product_scan(detector_list, motor_x, x0, xf,
+    yield from bp.outer_product_scan(detector_list, (motor_x, x0, xf,
                                      num_x, motor_y, y0, y_f, num_y,
-                                     False, per_step=total_relative_scan)
+                                     False), per_step=total_relative_scan)
