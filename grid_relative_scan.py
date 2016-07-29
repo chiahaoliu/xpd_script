@@ -10,10 +10,11 @@ for el in grid_scan_det_list:
         raise RuntimeError('Required detector is not defined yet')
 
 # for loop
-def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
+def grid_scan_v1(dx, dy, x, y, num_x, num_y):
     """ grid scan over different wells
 
-    inside each of well, a relative scan will be run
+    inside each of well, a relative scan will be run. scan starts from
+     current motor position, so be sure you have aligned correctly.
 
     Parameters:
     -----------
@@ -29,14 +30,6 @@ def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
         number of wells you have in x-direction
     num_y : int
         number of wells you have in y-direction
-    x0 : float
-        optional. starting position in x-direction of grid scan.
-        usually it is at the center of a well. default is current
-        position (assume you align first)
-    y0 : float
-        optional. starting position in y-direction of grid scan.
-        usually it is at the center of a well. default is current
-        position (assume you align first)
 
     Example:
     --------
@@ -46,9 +39,9 @@ def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
     # 0.1*2 unit
     """
     if x0 is None:
-        x0 = motor_x.get() #FIXME: syntax
+        x0 = motor_x.position() #FIXME: syntax
     if y0 is None:
-        y0 = motor_y.get()
+        y0 = motor_y.position()
     for i in range(num_x):
         _x = x0 + num_x*x
         mov(motor_x, _x)
@@ -65,10 +58,11 @@ def grid_scan_v1(dx, dy, x, y, num_x, num_y, x0=None, y0=None):
             yield from bp.pchian(x_scan, y_scan)
 
 # outer_product_scan
-def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y, x0=None, y0=None):
+def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y):
     """ grid scan over different wells
 
-    inside each of well, a relative scan will be run
+    inside each of well, a relative scan will be run. scan starts from 
+    current motor position, so be sure you have aligned correctly.
 
     Parameters:
     -----------
@@ -86,14 +80,6 @@ def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y, x0=None, y0=None):
         number of wells you have in x-direction
     num_y : int
         number of wells you have in y-direction
-    x0 : float
-        optional. starting position in x-direction of grid scan.
-        usually it is at the center of a well. default is current
-        position (assume you align first)
-    y0 : float
-        optional. starting position in y-direction of grid scan.
-        usually it is at the center of a well. default is current
-        position (assume you align first)
 
     Example:
     --------
@@ -101,10 +87,6 @@ def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y, x0=None, y0=None):
     # a 4 by 4 grid, with dimension 3.5 x 3.5 units in x- and y-
     # direction respectively, and diameter is 0.1*2 unit in each well
     """
-    if x0 is None:
-        x0 = motor_x.get() #FIXME: syntax
-    if y0 is None:
-        y0 = motor_y.get()
     # inside a well, relative scan
     # x direction
     x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x, [dx, -dx])
