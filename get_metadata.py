@@ -29,7 +29,7 @@ md_df = pd.DataFrame(md_array, columns=field)
 md_df.to_csv('med_md.csv', index=False)
 
 
-# Plot temperature vs rga_mass1
+# Example of plot temperature vs rga_mass1
 """
 fig = plt.figure()
 plt.plot(md_array[2,:],D[:,3],'o-')
