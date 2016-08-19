@@ -1,43 +1,20 @@
 import bluesky.plans as bp
 
 # define your motor and detector here
-area_det = None
-motor_x = None
-motor_y = None
+area_det = glbl.area_det
+motor_x = glbl.motor_x
+motor_y = glbl.motor_y
 grid_scan_det_list = [area_det, motor_x, motor_y]
 for el in grid_scan_det_list:
     if el is None:
         raise RuntimeError('Required detector is not defined yet')
 
+x0 = motor_x.position
+y0 = motor_y.position
+
 # for loop
+"""
 def grid_scan_v1(dx, dy, x, y, num_x, num_y):
-    """ grid scan over different wells
-
-    inside each of well, a relative scan will be run. scan starts from
-     current motor position, so be sure you have aligned correctly.
-
-    Parameters:
-    -----------
-    dx : float
-        dimension of each well in x-direction. unit depends on motor
-    dy : float
-        dimension of each well in y-direction. unit depends on motor
-    x : float
-        separation of wells in x-direction. unit depends on motor
-    y : float
-        separation of wells in y-direction. unit depends on motor
-    num_x : int
-        number of wells you have in x-direction
-    num_y : int
-        number of wells you have in y-direction
-
-    Example:
-    --------
-    prun(<sample_index>, grid_scan_v1(0.1, 0.1, 1, 1, 4, 4))
-    # scan oever 4 by 4 grid, with well separated in 1 unit, 1 unit in
-    # x- and y- direction respectively, and diameter of each well is
-    # 0.1*2 unit
-    """
     if x0 is None:
         x0 = motor_x.position() #FIXME: syntax
     if y0 is None:
@@ -56,9 +33,10 @@ def grid_scan_v1(dx, dy, x, y, num_x, num_y):
             y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y,
                                            [dy, -dy])
             yield from bp.pchian(x_scan, y_scan)
+"""
 
 # outer_product_scan
-def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y):
+def grid_scan(dx, dy, x_f, y_f, num_x, num_y):
     """ grid scan over different wells
 
     inside each of well, a relative scan will be run. scan starts from 
@@ -89,10 +67,10 @@ def grid_scan_v2(dx, dy, x_f, y_f, num_x, num_y):
     """
     # inside a well, relative scan
     # x direction
-    x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x, [dx, -dx])
+    x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x, [dx, 0, -dx])
     # y direction
-    y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y, [dy, -dy])
-    total_relative_scan = bp.pchian(x_scan, y_scan)
-    yield from bp.outer_product_scan(detector_list, (motor_x, x0, xf,
+    y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y, [dy, 0, -dy])
+    total_relative_scan = bp.pchain(x_scan, y_scan)
+    yield from bp.outer_product_scan(grid_scan_det_list, (motor_x, x0, x_f,
                                      num_x, motor_y, y0, y_f, num_y,
                                      False), per_step=total_relative_scan)
