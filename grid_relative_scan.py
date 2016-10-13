@@ -12,29 +12,6 @@ for el in grid_scan_det_list:
 x0 = motor_x.position
 y0 = motor_y.position
 
-# for loop
-"""
-def grid_scan_v1(dx, dy, x, y, num_x, num_y):
-    if x0 is None:
-        x0 = motor_x.position() #FIXME: syntax
-    if y0 is None:
-        y0 = motor_y.position()
-    for i in range(num_x):
-        _x = x0 + num_x*x
-        mov(motor_x, _x)
-        for j in range(num_y):
-            _y = y0 + num_y*y
-            mov(motor_y, _y)
-            # inside a well, relative scan
-            # x direction
-            x_scan = bp.relative_list_scan(grid_scan_det_list, motor_x,
-                                           [dx, -dx])
-            # y direction
-            y_scan = bp.relative_list_scan(grid_scan_det_list, motor_y,
-                                           [dy, -dy])
-            yield from bp.pchian(x_scan, y_scan)
-"""
-
 # outer_product_scan
 def grid_scan(dx, dy, x_f, y_f, num_x, num_y):
     """ grid scan over different wells
